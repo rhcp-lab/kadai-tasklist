@@ -31,7 +31,7 @@ class TasksController extends Controller
           $task = new Task;
 
         return view('tasks.create', [
-            'task' => $message,
+            'task' => $task,
         ]);
     }
 
