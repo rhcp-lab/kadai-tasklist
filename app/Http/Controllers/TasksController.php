@@ -14,11 +14,17 @@ class TasksController extends Controller
      */
     public function index()
     {
-        $tasks = Task::all();
+        //もしログインしていたら一覧を表示する（ログインしている人が登録したタスクの一覧）
+        if (\Auth::check()) {
+            $tasks = Task::all();
 
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
+            return view('tasks.index', [
+                'tasks' => $tasks,
+             ]);
+        }
+        
+        //ログインしていなければwlecomeブレードのビューを返す
+        return view('welcome');
     }
 
     /**
@@ -50,6 +56,9 @@ class TasksController extends Controller
         $task = new Task;
         $task->content = $request->content;
         $task->status = $request->status;
+        $task->user_id = \Auth::id(); 
+        //ユーザーIDを$taskのプロパティに設定する。
+        //ユーザーIDの取得方法　\Auth::id()の戻り値は現在ログイン中のユーザーIDです。
         $task->save();
 
         return redirect('/');
@@ -61,14 +70,22 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+   public function show($id)
     {
-        $task = task::find($id);
-
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+        $task = \App\Task::find($id);
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.show' , [
+                         'task' => $task,
+                ]); 
+        }
+        return redirect('/'); 
     }
+    
+    
+    
+    
+    
+    
 
     /**
      * Show the form for editing the specified resource.
@@ -79,11 +96,13 @@ class TasksController extends Controller
     public function edit($id)
     {
         
-        $task = Task::find($id);
-
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+       $task = \App\Task::find($id);
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.edit' , [ // viewはtasks.editですね。
+                         'task' => $task,
+                ]); 
+        }
+        return redirect('/'); 
     }
 
     /**
@@ -95,17 +114,25 @@ class TasksController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'status' => 'required|max:10',
-            'content' => 'required|max:191',
-        ]);
-        $task = Task::find($id);
-        $task->content = $request->content;
-        $task->status = $request->status;
-        $task->save();
-
+        
+        $task = \App\Task::find($id);
+        if (\Auth::id() === $task->user_id) {
+            // 更新処理
+            $this->validate($request, [
+                'status' => 'required|max:10',
+                'content' => 'required|max:191',
+            ]);
+            
+            $task->content = $request->content;
+            $task->status = $request->status;
+            $task->save();
+        }
         return redirect('/');
+        
     }
+    
+    
+    
 
     /**
      * Remove the specified resource from storage.
@@ -115,9 +142,11 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
-        $task = Task::find($id);
-        $task->delete();
-
+        $task = \App\Task::find($id);
+        if (\Auth::id() === $task->user_id) {
+            $task->delete();
+        }
         return redirect('/');
     }
 }
+ 

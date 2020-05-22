@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App; use \App\Task; 
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -25,5 +25,10 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password', 'remember_token',
+        
     ];
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 }
