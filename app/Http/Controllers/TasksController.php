@@ -16,8 +16,8 @@ class TasksController extends Controller
     {
         //もしログインしていたら一覧を表示する（ログインしている人が登録したタスクの一覧）
         if (\Auth::check()) {
-            $tasks = Task::all();
-
+            $user = \Auth::user();
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
             return view('tasks.index', [
                 'tasks' => $tasks,
              ]);
